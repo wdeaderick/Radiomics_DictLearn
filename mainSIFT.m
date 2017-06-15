@@ -6,7 +6,6 @@ function [mean_aucs] = mainSIFT(method)
 
 mean_aucs = [];%Preallocate return vector
 
-%{
 %% Select patients having a particular MR sequence available
 inds = {[],[],[],[]}; %Flair, T1, T1C, T2
 for j = 1:4
