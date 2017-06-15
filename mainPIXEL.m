@@ -121,6 +121,6 @@ for labs = 2
             progressbar([], trial/nfold);
         end
         progressbar(repeat/5, 0);
-        mean(auc)
     end
+    mean(auc)
 end
