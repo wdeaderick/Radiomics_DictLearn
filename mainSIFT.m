@@ -52,7 +52,7 @@ finlabels = slabels;
 %}
 %% All patients training
 labelsall = [labels, glabels, clabels];
-for labs = 2
+for labs = 1:3
     finlabels = labelsall(:,labs);
     totalpat = 30; %number of patches per patient
     allfeats = {}; %contains all the image patches 
