@@ -1,4 +1,11 @@
 load wspace.mat;
+
+function [mean_aucs] = mainHOG(method)
+%The method argument should only be passed one of the following strings: "DLSI", "FDDL", or "COPAR"
+%Returns a 1x3 vectors "mean_aucs" containing the mean AUCs for IDH Status, Grade, and Codeletion, respectively.
+
+mean_aucs = [];%Preallocate return vector
+
 %% Select patients having a particular MR sequence available
 inds = {[],[],[],[]}; %Flair, T1, T1C, T2
 for j = 1:4
@@ -13,7 +20,7 @@ seq = 1; %Select sequence: 1.Flair, 2.T1, 3.T1C, 4.T2
 imcells = {allimagesROI{seq}{inds{seq}}};
 masks = {allimagesmasks{seq}{inds{seq}}};
 
-for i = 1:length(imcells)
+for i = 1:length(imcells) %Pixel intensity normalization
     minimum = prctile(imcells{i}(:),1);    %( 3)
     maximum = prctile(imcells{i}(:),99);
     imcells{i} = (imcells{i} - minimum)/(maximum - minimum);
@@ -43,7 +50,7 @@ finlabels = slabels;
 %}
 %% All patients training
 labelsall = [labels, glabels, clabels];
-for labs = 2
+for labs = 1:3 %Compute Average AUC for all 3 outcome labels
     finlabels = labelsall(:,labs);
     totalpat = 500; %number of patches per patient
     allfeats = {}; %contains all the image patches 
@@ -57,7 +64,7 @@ for labs = 2
         arr = [];
         for sel = 1:c
             imtemp = masks{p}(:,:,sel);
-            if(sum(imtemp(:)) > 0.25*nrow*ncol) %select slices whose tumor part is more than 50%
+            if(sum(imtemp(:)) > 0.25*nrow*ncol) %select slices whose tumor part is more than 25%
                 arr = [arr sel];
             end
         end
@@ -88,9 +95,9 @@ for labs = 2
     %% Patch feature extraction
     n = length(finlabels);
     progressbar('CV repetitions', 'CV fold number');
-    for repeat = 1:5 %repeat the cross-validation process multiple times
-        acc = []; auc = [];
-        cpart = cvpartition(finlabels,'KFold', 5);
+    acc = []; auc = [];
+    parfor repeat = 1:5 %repeat the cross-validation process multiple times
+        cpart = cvpartition(finlabels,'KFold', 10);
         nfold = length(cpart.TrainSize); 
         for trial = 1:nfold
             trinds = find(cpart.training(trial)==1);
@@ -115,18 +122,25 @@ for labs = 2
             Y = [class0 ; class1]';
             Yrange = [1, length(class0), length(class0)+length(class1)];
             Yts = tsfeats';
-            [D, pred, f1s, Xts] = runDLSI(Y, Yrange, Yts, totalpat);
-            %[D, pred, f1s] = runCOPAR(Y, Yrange, Yts, totalpat);
-            %[D, pred, f1s] = runFDDL(Y, Yrange, Yts, totalpat);
+            if(method == 'DLSI')
+                [D, pred, f1s, Xts] = runDLSI(Y, Yrange, Yts, totalpat);
+            elseif(method == 'COPAR')    
+                [D, pred, f1s] = runCOPAR(Y, Yrange, Yts, totalpat);
+            elseif(method == 'FDDL')    
+                [D, pred, f1s] = runFDDL(Y, Yrange, Yts, totalpat);
+            else
+                disp('Invalid Argument')
+                return
+            end    
             [pred finlabels(tsinds) f1s]
             acc = [acc sum(pred == finlabels(tsinds))/length(pred) ];
             %AUC for test set
-            [x1,x2,T,AUC] = perfcurve(finlabels(tsinds),f1s/totalpat,1);
+            [~,~,~,AUC] = perfcurve(finlabels(tsinds),f1s/totalpat,1);
             auc = [auc AUC];
-            AUC
             progressbar([], trial/nfold);
         end
         progressbar(repeat/5, 0);
-        mean(auc)
     end
+    mean_aucs(labs) = mean(auc);
+end
 end
