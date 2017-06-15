@@ -96,11 +96,11 @@ for labs = 2
     end
 
     
-imshow(im(:,:,slice))    
-h1 = vl_plotframe(f(:,:)) ;
-h2 = vl_plotframe(f(:,:)) ;
-set(h1,'color','k','linewidth',3) ;
-set(h2,'color','y','linewidth',2) ;
+    imshow(im(:,:,slice))    
+    h1 = vl_plotframe(f(:,:)) ;
+    h2 = vl_plotframe(f(:,:)) ;
+    set(h1,'color','k','linewidth',3) ;
+    set(h2,'color','y','linewidth',2) ;
     %% Patch feature extraction
     n = length(finlabels);
     acc = []; auc = [];
