@@ -1,4 +1,11 @@
 load wspace.mat;
+
+function [mean_aucs] = mainPIXEL(method)
+%The method argument should only be passed one of the following strings: "DLSI", "FDDL", or "COPAR"
+%Returns a 1x3 vectors "mean_aucs" containing the mean AUCs for IDH Status, Grade, and Codeletion, respectively.
+
+mean_aucs = [];%Preallocate return vector
+
 %% Select patients having a particular MR sequence available
 inds = {[],[],[],[]}; %Flair, T1, T1C, T2
 for j = 1:4
@@ -43,7 +50,7 @@ finlabels = slabels;
 %}
 %% All patients training
 labelsall = [labels, glabels, clabels];
-for labs = 2
+for labs = 1:3
     finlabels = labelsall(:,labs);
     totalpat = 500; %number of patches per patient
     allfeats = {}; %contains all the image patches 
@@ -84,7 +91,7 @@ for labs = 2
     n = length(finlabels);
     progressbar('CV repetitions', 'CV fold number');
     acc = []; auc = [];
-    for repeat = 1:5 %repeat the cross-validation process multiple times
+    parfor repeat = 1:5 %repeat the cross-validation process multiple times
         cpart = cvpartition(finlabels,'KFold', 10);
         nfold = length(cpart.TrainSize); 
         for trial = 1:nfold
@@ -110,17 +117,25 @@ for labs = 2
             Y = [class0 ; class1]';
             Yrange = [1, length(class0), length(class0)+length(class1)];
             Yts = tsfeats';
-            %[D, pred, f1s, Xts] = runDLSI(Y, Yrange, Yts, totalpat);
-            [D, pred, f1s] = runCOPAR(Y, Yrange, Yts, totalpat);
+            if(method == 'DLSI')
+                [D, pred, f1s, Xts] = runDLSI(Y, Yrange, Yts, totalpat);
+            elseif(method == 'COPAR')    
+                [D, pred, f1s] = runCOPAR(Y, Yrange, Yts, totalpat);
+            elseif(method == 'FDDL')    
+                [D, pred, f1s] = runFDDL(Y, Yrange, Yts, totalpat);
+            else
+                disp('Invalid Argument')
+                return
+            end    
             [pred finlabels(tsinds) f1s]
             acc = [acc sum(pred == finlabels(tsinds))/length(pred) ];
             %AUC for test set
-            [x1,x2,T,AUC] = perfcurve(finlabels(tsinds),f1s/totalpat,1);
+            [~,~,~,AUC] = perfcurve(finlabels(tsinds),f1s/totalpat,1);
             auc = [auc AUC];
-            AUC
             progressbar([], trial/nfold);
         end
         progressbar(repeat/5, 0);
     end
-    mean(auc)
+    mean_aucs(labs) = mean(auc);
+end
 end
