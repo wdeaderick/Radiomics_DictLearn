@@ -83,8 +83,8 @@ for labs = 2
     %% Patch feature extraction
     n = length(finlabels);
     progressbar('CV repetitions', 'CV fold number');
+    acc = []; auc = [];
     for repeat = 1:5 %repeat the cross-validation process multiple times
-        acc = []; auc = [];
         cpart = cvpartition(finlabels,'KFold', 10);
         nfold = length(cpart.TrainSize); 
         for trial = 1:nfold
