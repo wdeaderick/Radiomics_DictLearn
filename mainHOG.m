@@ -1,9 +1,9 @@
 function [mean_aucs] = mainHOG(method)
-%The method argument should be passed 1 for DLSI, 2 for COPAR, 3 for FDDL.
+%The method argument should be passed 1 for DLSI, 2 for COPAR, 3 for FDDL
 %Returns a 1x3 vectors "mean_aucs" containing the mean AUCs for IDH Status, Grade, and Codeletion, respectively.
-load wspace.mat;
+load wspace.mat
 mean_aucs = [];%Preallocate return vector
-
+ 
 %% Select patients having a particular MR sequence available
 inds = {[],[],[],[]}; %Flair, T1, T1C, T2
 for j = 1:4
@@ -13,24 +13,24 @@ for j = 1:4
         end
     end
 end
-
+ 
 seq = 1; %Select sequence: 1.Flair, 2.T1, 3.T1C, 4.T2
 imcells = {allimagesROI{seq}{inds{seq}}};
 masks = {allimagesmasks{seq}{inds{seq}}};
-
+ 
 for i = 1:length(imcells) %Pixel intensity normalization
     minimum = prctile(imcells{i}(:),1);    %( 3)
     maximum = prctile(imcells{i}(:),99);
     imcells{i} = (imcells{i} - minimum)/(maximum - minimum);
 end
-
+ 
 labels = labels(inds{seq});
 glabels = glabels(inds{seq});
 clabels = clabels(inds{seq});
 hlabels = hlabels(inds{seq});
 slabels = slabels(inds{seq});
 allpws = allpws(inds{seq},:);
-
+ 
 %% For survival - ignore label:2
 %{
 ind = [];
@@ -54,7 +54,6 @@ for labs = 1:3 %Compute Average AUC for all 3 outcome labels
     allfeats = {}; %contains all the image patches 
     psize = 20; %patch size: [psize x psize]
     for p = 1:length(finlabels)
-        p
         im = double(imcells{p});
         nrow = size(im,1);
         ncol = size(im,2);
@@ -83,12 +82,10 @@ for labs = 1:3 %Compute Average AUC for all 3 outcome labels
                 %HOG descriptor
                 hogfeats = vl_hog(im2single(patch),2); %Adjust Cell Size as necessary
                 tempallfeats(tcount,:) = hogfeats(:);
-                %sum(hogfeats(:))
             end
         end 
         allfeats{p} = tempallfeats(1:totalpat,:);
     end
-
     %% Patch feature extraction
     n = length(finlabels);
     progressbar('CV repetitions', 'CV fold number');
@@ -106,7 +103,6 @@ for labs = 1:3 %Compute Average AUC for all 3 outcome labels
             for i = 1:length(tsinds)
                 tsfeats = vertcat(tsfeats, allfeats{tsinds(i)});
             end
-
             %Dictionary Learning
             class1 = []; class0 = [];
             for i = 1:length(trinds)
