@@ -1,9 +1,9 @@
 function [mean_aucs] = mainPIXEL(method)
 %The method argument should be passed 1 for DLSI, 2 for COPAR, 3 for FDDL.
 %Returns a 1x3 vectors "mean_aucs" containing the mean AUCs for IDH Status, Grade, and Codeletion, respectively.
-load wspace.mat;
+load wspace.mat
 mean_aucs = [];%Preallocate return vector
-
+ 
 %% Select patients having a particular MR sequence available
 inds = {[],[],[],[]}; %Flair, T1, T1C, T2
 for j = 1:4
@@ -13,24 +13,24 @@ for j = 1:4
         end
     end
 end
-
+ 
 seq = 1; %Select sequence: 1.Flair, 2.T1, 3.T1C, 4.T2
 imcells = {allimagesROI{seq}{inds{seq}}};
 masks = {allimagesmasks{seq}{inds{seq}}};
-
+ 
 for i = 1:length(imcells)
     minimum = prctile(imcells{i}(:),1);    %( 3)
     maximum = prctile(imcells{i}(:),99);
     imcells{i} = (imcells{i} - minimum)/(maximum - minimum);
 end
-
+ 
 labels = labels(inds{seq});
 glabels = glabels(inds{seq});
 clabels = clabels(inds{seq});
 hlabels = hlabels(inds{seq});
 slabels = slabels(inds{seq});
 allpws = allpws(inds{seq},:);
-
+ 
 %% For survival - ignore label:2
 %{
 ind = [];
@@ -84,7 +84,7 @@ for labs = 1:3
         end 
         allfeats{p} = tempallfeats(1:totalpat,:);
     end
-
+ 
     %% Patch feature extraction
     n = length(finlabels);
     progressbar('CV repetitions', 'CV fold number');
@@ -102,7 +102,7 @@ for labs = 1:3
             for i = 1:length(tsinds)
                 tsfeats = vertcat(tsfeats, allfeats{tsinds(i)});
             end
-
+ 
             %Dictionary Learning
             class1 = []; class0 = [];
             for i = 1:length(trinds)
