@@ -1,9 +1,9 @@
 function [mean_aucs] = mainSIFT(method)
-%The method argument should be passed 1 for DLSI, 2 for COPAR, 3 for FDDL.
+%The method argument should be passed 1 for DLSI, 2 for COPAR, 3 for FDDL
 %Returns a 1x3 vectors "mean_aucs" containing the mean AUCs for IDH Status, Grade, and Codeletion, respectively.
-load wspace.mat;
+load wspace.mat
 mean_aucs = [];%Preallocate return vector
-
+ 
 %% Select patients having a particular MR sequence available
 inds = {[],[],[],[]}; %Flair, T1, T1C, T2
 for j = 1:4
@@ -13,24 +13,24 @@ for j = 1:4
         end
     end
 end
-
+ 
 seq = 1; %Select sequence: 1.Flair, 2.T1, 3.T1C, 4.T2
 imcells = {allimagesROI{seq}{inds{seq}}};
 masks = {allimagesmasks{seq}{inds{seq}}};
-
+ 
 for i = 1:length(imcells)
     minimum = prctile(imcells{i}(:),1);    %( 3)
     maximum = prctile(imcells{i}(:),99);
     imcells{i} = (imcells{i} - minimum)/(maximum - minimum);
 end
-
+ 
 labels = labels(inds{seq});
 glabels = glabels(inds{seq});
 clabels = clabels(inds{seq});
 hlabels = hlabels(inds{seq});
 slabels = slabels(inds{seq});
 allpws = allpws(inds{seq},:);  
-
+ 
 %% For survival - ignore label:2
 %{
 ind = [];
@@ -46,13 +46,13 @@ a = a-1;
 slabels = a;
 finlabels = slabels;
 %}
-
+ 
 %}
 %% All patients training
 labelsall = [labels, glabels, clabels];
 for labs = 1:3
     finlabels = labelsall(:,labs);
-    totalpat = 30; %number of patches per patient
+    totalpat = 200; %number of patches per patient
     allfeats = {}; %contains all the image patches 
     psize = 20; %patch size: [psize x psize]
     for p = 1:length(finlabels)
@@ -68,7 +68,7 @@ for labs = 1:3
         nslices = min(length(arr), 5); %Choose best 5 slices with max tumor area
         [~, inds] = sort(arr, 'descend');
         npat = ceil(totalpat/nslices); %number of patches to sample per slice
-        inds = inds(1:nslices)
+        inds = inds(1:nslices);
         tcount = 1; %total patch count
         tempallfeats = []; %temporary variable
         for slice = inds
@@ -88,10 +88,9 @@ for labs = 1:3
                 pcount = pcount + 1; % patch count for present slice
                 tcount = tcount + 1;
             end
-        end 
-        allfeats{p} = tempallfeats(1:totalpat,:);
+        end
+        allfeats{p} = tempallfeats(1:end,:);
     end
-
     
     imshow(im(:,:,slice))    
     h1 = vl_plotframe(f(:,:)) ;
@@ -108,22 +107,24 @@ for labs = 1:3
         for trial = 1:nfold
             trinds = find(cpart.training(trial)==1);
             tsinds = find(cpart.training(trial)==0);
-            trfeats = []; tsfeats = [];
+            trfeats = []; tsfeats = []; trlengths = [];
             for i = 1:length(trinds)
                 trfeats = vertcat(trfeats, allfeats{trinds(i)});
+                trlengths(i) = size(allfeats{trinds(i)},1);
             end
             for i = 1:length(tsinds)
                 tsfeats = vertcat(tsfeats, allfeats{tsinds(i)});
             end
-
             %Dictionary Learning
             class1 = []; class0 = [];
+            bookmark = 0;
             for i = 1:length(trinds)
                 if(finlabels(trinds(i)) == 1)
-                    class1 = [class1 ; trfeats((i-1)*totalpat+1:i*totalpat,:)];
+                    class1 = [class1 ; trfeats(bookmark + 1:bookmark + trlengths(i),:)];
                 else
-                    class0 = [class0 ; trfeats((i-1)*totalpat+1:i*totalpat,:)];
+                    class0 = [class0 ; trfeats(bookmark + 1:bookmark + trlengths(i),:)];
                 end
+                bookmark = bookmark + trlengths(i);
             end
             Y = [class0 ; class1]';
             Yrange = [1, length(class0), length(class0)+length(class1)];
@@ -136,7 +137,7 @@ for labs = 1:3
                 [D, pred, f1s] = runFDDL(Y, Yrange, Yts, totalpat);
             else
                 disp('Invalid Argument')
-                break 
+                break
             end    
             [pred finlabels(tsinds) f1s]
             acc = [acc sum(pred == finlabels(tsinds))/length(pred) ];
