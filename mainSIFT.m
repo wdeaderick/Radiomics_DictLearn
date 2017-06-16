@@ -1,9 +1,7 @@
-load wspace2.mat;
-
 function [mean_aucs] = mainSIFT(method)
 %The method argument should only be passed one of the following strings: "DLSI", "FDDL", or "COPAR"
 %Returns a 1x3 vectors "mean_aucs" containing the mean AUCs for IDH Status, Grade, and Codeletion, respectively.
-
+load wspace.mat;
 mean_aucs = [];%Preallocate return vector
 
 %% Select patients having a particular MR sequence available
