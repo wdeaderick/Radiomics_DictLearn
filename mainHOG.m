@@ -128,7 +128,7 @@ for labs = 1:3 %Compute Average AUC for all 3 outcome labels
                 [D, pred, f1s] = runFDDL(Y, Yrange, Yts, totalpat);
             else
                 disp('Invalid Argument')
-                return
+                break
             end    
             [pred finlabels(tsinds) f1s]
             acc = [acc sum(pred == finlabels(tsinds))/length(pred) ];
