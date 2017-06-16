@@ -56,7 +56,6 @@ for labs = 1:3
     allfeats = {}; %contains all the image patches 
     psize = 20; %patch size: [psize x psize]
     for p = 1:length(finlabels)
-        p
         im = double(imcells{p});
         nrow = size(im,1);
         ncol = size(im,2);
@@ -67,7 +66,7 @@ for labs = 1:3
             arr = [arr sum(imtemp(:))];
         end
         nslices = min(length(arr), 5); %Choose best 5 slices with max tumor area
-        [arrsort, inds] = sort(arr, 'descend');
+        [~, inds] = sort(arr, 'descend');
         npat = ceil(totalpat/nslices); %number of patches to sample per slice
         inds = inds(1:nslices)
         tcount = 1; %total patch count
