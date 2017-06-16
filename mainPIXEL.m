@@ -1,5 +1,5 @@
 function [mean_aucs] = mainPIXEL(method)
-%The method argument should only be passed one of the following strings: "DLSI", "FDDL", or "COPAR"
+%The method argument should be passed 1 for DLSI, 2 for COPAR, 3 for FDDL.
 %Returns a 1x3 vectors "mean_aucs" containing the mean AUCs for IDH Status, Grade, and Codeletion, respectively.
 load wspace.mat;
 mean_aucs = [];%Preallocate return vector
@@ -115,11 +115,11 @@ for labs = 1:3
             Y = [class0 ; class1]';
             Yrange = [1, length(class0), length(class0)+length(class1)];
             Yts = tsfeats';
-            if(method == 'DLSI')
+            if(method == 1)
                 [D, pred, f1s, Xts] = runDLSI(Y, Yrange, Yts, totalpat);
-            elseif(method == 'COPAR')    
+            elseif(method == 2)    
                 [D, pred, f1s] = runCOPAR(Y, Yrange, Yts, totalpat);
-            elseif(method == 'FDDL')    
+            elseif(method == 3)    
                 [D, pred, f1s] = runFDDL(Y, Yrange, Yts, totalpat);
             else
                 disp('Invalid Argument')
