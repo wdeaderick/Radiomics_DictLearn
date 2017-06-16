@@ -129,6 +129,7 @@ for labs = 1:3
             acc = [acc sum(pred == finlabels(tsinds))/length(pred) ];
             %AUC for test set
             [~,~,~,AUC] = perfcurve(finlabels(tsinds),f1s/totalpat,1);
+            AUC
             auc = [auc AUC];
             progressbar([], trial/nfold);
         end
