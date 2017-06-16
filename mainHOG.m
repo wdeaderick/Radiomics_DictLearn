@@ -81,8 +81,7 @@ for labs = 1:3 %Compute Average AUC for all 3 outcome labels
                 pcount = pcount + 1; % patch count for present slice
                 tcount = tcount + 1;
                 %HOG descriptor
-                hogfeats = extractHOGFeatures(patch, 'CellSize', [psize, psize],... 
-                'BlockSize', [1,1], 'NumBins', 9);
+                hogfeats = vl_hog(im2single(patch),2); %Adjust Cell Size as necessary
                 tempallfeats(tcount,:) = hogfeats(:);
                 %sum(hogfeats(:))
             end
