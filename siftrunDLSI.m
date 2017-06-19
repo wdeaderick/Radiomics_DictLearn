@@ -1,4 +1,5 @@
-function [D, pred, f1s, Xts] = runDLSI(Y, Yrange, Yts, tslengths)
+function [D, pred, f1s, Xts] = siftrunDLSI(Y, Yrange, Yts, tslengths)
+%Used when employing the SIFT desciptor
 %Change DLSI input parameters here
 fprintf('Running DLSI... \n')
 k = 20;   %Number of dictionary atoms
