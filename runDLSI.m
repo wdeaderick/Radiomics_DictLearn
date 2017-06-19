@@ -4,7 +4,7 @@ fprintf('Running DLSI... \n')
 k = 20;   %Number of dictionary atoms
 C              = 2;
 D_range        = k*(0:C);
-opts.k = k
+opts.k = k;
 opts.lambda    = 0.001;
 opts.eta       = 0.01;
 opts.D_range   = D_range;
