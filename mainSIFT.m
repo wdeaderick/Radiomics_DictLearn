@@ -107,13 +107,14 @@ for labs = 1:3
         for trial = 1:nfold
             trinds = find(cpart.training(trial)==1);
             tsinds = find(cpart.training(trial)==0);
-            trfeats = []; tsfeats = []; trlengths = [];
+            trfeats = []; tsfeats = []; trlengths = []; tslengths = [];
             for i = 1:length(trinds)
                 trfeats = vertcat(trfeats, allfeats{trinds(i)});
                 trlengths(i) = size(allfeats{trinds(i)},1);
             end
             for i = 1:length(tsinds)
                 tsfeats = vertcat(tsfeats, allfeats{tsinds(i)});
+                tslengths(i) = size(allfeats{tsinds(i)},1);
             end
             %Dictionary Learning
             class1 = []; class0 = [];
@@ -130,25 +131,25 @@ for labs = 1:3
             Yrange = [1, length(class0), length(class0)+length(class1)];
             Yts = tsfeats';
             if(method == 1)
-                [D, pred, f1s, Xts] = runDLSI(Y, Yrange, Yts, totalpat);
+                [D, pred, f1s, Xts] = siftrunDLSI(Y, Yrange, Yts, tslengths);
             elseif(method == 2)    
-                [D, pred, f1s] = runCOPAR(Y, Yrange, Yts, totalpat);
+                [D, pred, f1s] = siftrunCOPAR(Y, Yrange, Yts, tslengths);
             elseif(method == 3)    
-                [D, pred, f1s] = runFDDL(Y, Yrange, Yts, totalpat);
+                [D, pred, f1s] = siftrunFDDL(Y, Yrange, Yts, tslengths);
             else
                 disp('Invalid Argument')
                 break
-            end    
-            [pred finlabels(tsinds) f1s]
-            acc = [acc sum(pred == finlabels(tsinds))/length(pred) ];
+            end
+            %acc = [acc sum(pred == finlabels(tsinds))/length(pred) ];
             %AUC for test set
-            [~,~,~,AUC] = perfcurve(finlabels(tsinds),f1s/totalpat,1);
+            [~,~,~,AUC] = perfcurve(finlabels(tsinds),f1s./(tslengths'),1);
             AUC
             auc = [auc AUC];
             progressbar([], trial/nfold);
         end
         progressbar(repeat/5, 0);
     end
+    disp(length(auc))
     mean_aucs(labs) = mean(auc);
 end
 end
