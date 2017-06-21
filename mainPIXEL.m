@@ -4,7 +4,7 @@ function [mean_aucs] = mainPIXEL(method)
 load wspace.mat
 mean_aucs = [];%Preallocate return vector
  
-%% Select patients having a particular MR sequence available
+%{ Select patients having a particular MR sequence available
 inds = {[],[],[],[]}; %Flair, T1, T1C, T2
 for j = 1:4
     for i = 1:length(allimagesROI{1})
@@ -23,7 +23,12 @@ for i = 1:length(imcells)
     maximum = prctile(imcells{i}(:),99);
     imcells{i} = (imcells{i} - minimum)/(maximum - minimum);
 end
- 
+%}
+
+seq = 1; %Select sequence: 1.Flair, 2.T1, 3.T1C, 4.T2
+masks = {allimagesmasks{seq}{inds{seq}}};
+imcells = imcells_seq1; %Select sequence: 1.Flair, 2.T1, 3.T1C, 4.T2
+
 labels = labels(inds{seq});
 glabels = glabels(inds{seq});
 clabels = clabels(inds{seq});
