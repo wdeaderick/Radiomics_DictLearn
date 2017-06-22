@@ -4,8 +4,7 @@ function [mean_aucs] = mainSIFT(method)
 load wspace.mat
 mean_aucs = [];%Preallocate return vector
  
- 
-%Select patients having a particular MR sequence available
+%{ Select patients having a particular MR sequence available
 inds = {[],[],[],[]}; %Flair, T1, T1C, T2
 for j = 1:4
     for i = 1:length(allimagesROI{1})
@@ -15,8 +14,8 @@ for j = 1:4
     end
 end
  
+%{
 seq = 1; %Select sequence: 1.Flair, 2.T1, 3.T1C, 4.T2
-imcells = {allimagesROI{seq}{inds{seq}}};
 masks = {allimagesmasks{seq}{inds{seq}}};
  
 for i = 1:length(imcells)
@@ -24,8 +23,12 @@ for i = 1:length(imcells)
     maximum = prctile(imcells{i}(:),99);
     imcells{i} = (imcells{i} - minimum)/(maximum - minimum);
 end
+ 
 %}
-
+seq = 1; %Select sequence: 1.Flair, 2.T1, 3.T1C, 4.T2
+masks = {allimagesmasks{seq}{inds{seq}}};
+imcells = imcells_seq1; %Select sequence: 1.Flair, 2.T1, 3.T1C, 4.T2
+ 
 labels = labels(inds{seq});
 glabels = glabels(inds{seq});
 clabels = clabels(inds{seq});
@@ -54,9 +57,9 @@ finlabels = slabels;
 labelsall = [labels, glabels, clabels];
 for labs = 1:3
     finlabels = labelsall(:,labs);
-    totalpat = 200; %number of patches per patient
+    totalpat = 300; %number of patches per patient
     allfeats = {}; %contains all the image patches 
-    psize = 20; %patch size: [psize x psize]
+    psize = 16; %patch size: [psize x psize]
     for p = 1:length(finlabels)
         im = double(imcells{p});
         nrow = size(im,1);
@@ -74,13 +77,7 @@ for labs = 1:3
         tcount = 1; %total patch count
         tempallfeats = []; %temporary variable
         for slice = inds
-            [f,d] = vl_sift(single(im(:,:,slice)), 'PeakThresh', 0, 'edgethresh', 10); %SIFT descriptor
-            %size(d)
-            imshow(im(:,:,slice)); 
-            h1 = vl_plotframe(f(:,:)) ;
-            h2 = vl_plotframe(f(:,:)) ;
-            set(h1,'color','k','linewidth',3) ;
-            set(h2,'color','y','linewidth',2) ;
+            [~,d] = vl_dsift(single(im(:,:,slice)), 'size', 4); %SIFT descriptor
             pcount = 1;
             while(1)
                 if(pcount > min(size(d,2),npat))
@@ -94,11 +91,11 @@ for labs = 1:3
         allfeats{p} = tempallfeats(1:end,:);
     end
     
-    imshow(im(:,:,slice))    
-    h1 = vl_plotframe(f(:,:)) ;
-    h2 = vl_plotframe(f(:,:)) ;
-    set(h1,'color','k','linewidth',3) ;
-    set(h2,'color','y','linewidth',2) ;
+    %imshow(im(:,:,slice))    
+    %h1 = vl_plotframe(f(:,:)) ;
+    %h2 = vl_plotframe(f(:,:)) ;
+    %set(h1,'color','k','linewidth',3) ;
+    %set(h2,'color','y','linewidth',2) ;
     %% Patch feature extraction
     n = length(finlabels);
     acc = []; auc = [];
@@ -133,11 +130,11 @@ for labs = 1:3
             Yrange = [1, length(class0), length(class0)+length(class1)];
             Yts = tsfeats';
             if(method == 1)
-                [D, pred, f1s, Xts] = siftrunDLSI(Y, Yrange, Yts, tslengths);
+                [~, ~, f1s, ~] = siftrunDLSI(Y, Yrange, Yts, tslengths);
             elseif(method == 2)    
-                [D, pred, f1s] = siftrunCOPAR(Y, Yrange, Yts, tslengths);
+                [~, ~, f1s] = siftrunCOPAR(Y, Yrange, Yts, tslengths);
             elseif(method == 3)    
-                [D, pred, f1s] = siftrunFDDL(Y, Yrange, Yts, tslengths);
+                [~, ~, f1s] = siftrunFDDL(Y, Yrange, Yts, tslengths);
             else
                 disp('Invalid Argument')
                 break
@@ -152,5 +149,3 @@ for labs = 1:3
         progressbar(repeat/5, 0);
     end
     mean_aucs(labs) = mean(auc);
-end
-end
