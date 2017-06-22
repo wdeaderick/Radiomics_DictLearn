@@ -15,17 +15,22 @@ for j = 1:4
     end
 end
  
+%{
 seq = 1; %Select sequence: 1.Flair, 2.T1, 3.T1C, 4.T2
 imcells = {allimagesROI{seq}{inds{seq}}};
 masks = {allimagesmasks{seq}{inds{seq}}};
  
 for i = 1:length(imcells)
-    minimum = prctile(imcells{i}(:),1);    %( 3)
+    minimum = prctile(imcells{i}(:),1);    %3
     maximum = prctile(imcells{i}(:),99);
     imcells{i} = (imcells{i} - minimum)/(maximum - minimum);
 end
 %}
-
+ 
+seq = 1; %Select sequence: 1.Flair, 2.T1, 3.T1C, 4.T2
+masks = {allimagesmasks{seq}{inds{seq}}};
+imcells = imcells_seq1; %Select sequence: 1.Flair, 2.T1, 3.T1C, 4.T2
+ 
 labels = labels(inds{seq});
 glabels = glabels(inds{seq});
 clabels = clabels(inds{seq});
@@ -52,9 +57,9 @@ finlabels = slabels;
 labelsall = [labels, glabels, clabels];
 for labs = 1:3
     finlabels = labelsall(:,labs);
-    totalpat = 500; %number of patches per patient
+    totalpat = 300; %number of patches per patient
     allfeats = {}; %contains all the image patches 
-    psize = 20; %patch size: [psize x psize]
+    psize = 16; %patch size: [psize x psize]
     for p = 1:length(finlabels)
         im = double(imcells{p});
         nrow = size(im,1);
@@ -63,7 +68,7 @@ for labs = 1:3
         arr = [];
         for sel = 1:c
             imtemp = masks{p}(:,:,sel);
-            if(sum(imtemp(:)) > 0.25*nrow*ncol) %select slices whose tumor part is more than 50%
+            if(sum(imtemp(:)) > 0.25*nrow*ncol) %select slices whose tumor part is more than 30%
                 arr = [arr sel];
             end
         end
@@ -73,7 +78,7 @@ for labs = 1:3
         for slice = arr
             pcount = 0;
             while(1)
-                if(pcount> npat)
+                if(pcount > npat)
                     break;
                 end
                 row = randi(nrow-psize, 1);
@@ -127,7 +132,6 @@ for labs = 1:3
                 disp('Invalid Argument')
                 break
             end    
-            [pred finlabels(tsinds) f1s]
             acc = [acc sum(pred == finlabels(tsinds))/length(pred) ];
             %AUC for test set
             [~,~,~,AUC] = perfcurve(finlabels(tsinds),f1s/totalpat,1);
