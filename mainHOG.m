@@ -4,8 +4,7 @@ function [mean_aucs] = mainHOG(method)
 load wspace.mat
 mean_aucs = [];%Preallocate return vector
  
- 
-%Select patients having a particular MR sequence available
+%{ Select patients having a particular MR sequence available
 inds = {[],[],[],[]}; %Flair, T1, T1C, T2
 for j = 1:4
     for i = 1:length(allimagesROI{1})
@@ -14,7 +13,7 @@ for j = 1:4
         end
     end
 end
- 
+%{ 
 seq = 1; %Select sequence: 1.Flair, 2.T1, 3.T1C, 4.T2
 imcells = {allimagesROI{seq}{inds{seq}}};
 masks = {allimagesmasks{seq}{inds{seq}}};
@@ -25,7 +24,11 @@ for i = 1:length(imcells)
     imcells{i} = (imcells{i} - minimum)/(maximum - minimum);
 end
 %}
-
+ 
+seq = 1; %Select sequence: 1.Flair, 2.T1, 3.T1C, 4.T2
+masks = {allimagesmasks{seq}{inds{seq}}};
+imcells = imcells_seq1; %Select sequence: 1.Flair, 2.T1, 3.T1C, 4.T2
+ 
 labels = labels(inds{seq});
 glabels = glabels(inds{seq});
 clabels = clabels(inds{seq});
@@ -52,9 +55,9 @@ finlabels = slabels;
 labelsall = [labels, glabels, clabels];
 for labs = 1:3 %Compute Average AUC for all 3 outcome labels
     finlabels = labelsall(:,labs);
-    totalpat = 500; %number of patches per patient
+    totalpat = 300; %number of patches per patient
     allfeats = {}; %contains all the image patches 
-    psize = 20; %patch size: [psize x psize]
+    psize = 16; %patch size: [psize x psize]
     for p = 1:length(finlabels)
         im = double(imcells{p});
         nrow = size(im,1);
@@ -82,7 +85,7 @@ for labs = 1:3 %Compute Average AUC for all 3 outcome labels
                 pcount = pcount + 1; % patch count for present slice
                 tcount = tcount + 1;
                 %HOG descriptor
-                hogfeats = vl_hog(im2single(patch),2); %Adjust Cell Size as necessary
+                hogfeats = vl_hog(im2single(patch),8); %Adjust Cell Size as necessary
                 tempallfeats(tcount,:) = hogfeats(:);
             end
         end 
