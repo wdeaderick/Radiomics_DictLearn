@@ -1,20 +1,19 @@
 function [D, pred, f1s, Xts] = siftrunDLSI(Y, Yrange, Yts, tslengths)
-%Used when employing the SIFT desciptor
 %Change DLSI input parameters here
 fprintf('Running DLSI... \n')
-k = 20;   %Number of dictionary atoms
+k = 300;   %Number of dictionary atoms
 C              = 2;
 D_range        = k*(0:C);
 opts.k = k;
-opts.lambda    = 0.001;
-opts.eta       = 0.01;
+opts.lambda    = 0.5;
+opts.eta       = 1;
 opts.D_range   = D_range;
 opts.show_cost = 0;
 opts.show      = 0;
 opts.verbose    = false;
 opts.max_iter  = 10; 
 tic
-[D, X, rt] = DLSI(Y, Yrange, opts);
+[D, ~, ~] = DLSI(Y, Yrange, opts);
 toc
 Xts = lasso_fista(Yts, D, [],opts.lambda, opts);
 a = DLSI_pred(Yts, D, opts);
