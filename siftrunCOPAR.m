@@ -1,20 +1,20 @@
 function [D, pred, f1s] = siftrunCOPAR(Y, Yrange, Yts, tslengths)
 %Change COPAR input parameters here
 fprintf('Running COPAR... \n')
-k = 20;
-k0 = 10;
+k = 150;
+k0 = k;
 opts.k = k;
 opts.k0 = k0;
 C = 2;
 D_range_ext = [k*(0:C), k*C + k0];
-opts.lambda      = 0.001;
+opts.lambda      = 0.1;
 opts.eta         = 0.01;    
 opts.show        = false;
 opts.max_iter    = 10;        
 opts.verbose      = false;
  
 tic
-[D, X, rt] = COPAR(Y, Yrange, opts);
+[D, ~, ~] = COPAR(Y, Yrange, opts);
 toc
 opts.classify_mode = 'LC'; %'LC' or 'GC'
 opts.gamma = 0.01; %[0.0001, 0.001, 0.005, 0.01]
