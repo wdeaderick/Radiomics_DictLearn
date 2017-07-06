@@ -149,3 +149,5 @@ for labs = 1:3
         progressbar(repeat/5, 0);
     end
     mean_aucs(labs) = mean(auc);
+end
+end
