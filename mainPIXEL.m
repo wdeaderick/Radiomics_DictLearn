@@ -27,9 +27,9 @@ for i = 1:length(imcells)
 end
 %}
  
-seq = 1; %Select sequence: 1.Flair, 2.T1, 3.T1C, 4.T2
+seq = 4; %Select sequence: 1.Flair, 2.T1, 3.T1C, 4.T2
 masks = {allimagesmasks{seq}{inds{seq}}};
-imcells = imcells_seq1; %Select sequence: 1.Flair, 2.T1, 3.T1C, 4.T2
+imcells = imcells_seq4; %Select sequence: 1.Flair, 2.T1, 3.T1C, 4.T2
  
 labels = labels(inds{seq});
 glabels = glabels(inds{seq});
@@ -57,7 +57,7 @@ finlabels = slabels;
 labelsall = [labels, glabels, clabels];
 for labs = 1:3
     finlabels = labelsall(:,labs);
-    totalpat = 300; %number of patches per patient
+    totalpat = 140; %number of patches per patient
     allfeats = {}; %contains all the image patches 
     psize = 16; %patch size: [psize x psize]
     for p = 1:length(finlabels)
@@ -68,14 +68,23 @@ for labs = 1:3
         arr = [];
         for sel = 1:c
             imtemp = masks{p}(:,:,sel);
-            if(sum(imtemp(:)) > 0.25*nrow*ncol) %select slices whose tumor part is more than 30%
+            if(sum(imtemp(:)) > 0.45*nrow*ncol) %select slices whose tumor part is more than 30%
                 arr = [arr sel];
             end
         end
+        if (isempty(arr))
+            for sel = 1:c
+                imtemp = masks{p}(:,:,sel);
+                if(sum(imtemp(:)) > 0.20*nrow*ncol) %select slices whose tumor part is more than 30%
+                    arr = [arr sel];
+                end
+            end
+        end 
         npat = ceil(totalpat/length(arr)); %number of patches to sample per slice
         tcount = 0; %total patch count
         tempallfeats = []; %temporary variable
         for slice = arr
+            %imshow(im(:,:,slice))
             pcount = 0;
             while(1)
                 if(pcount > npat)
@@ -123,11 +132,11 @@ for labs = 1:3
             Yrange = [1, length(class0), length(class0)+length(class1)];
             Yts = tsfeats';
             if(method == 1)
-                [D, pred, f1s, Xts] = runDLSI(Y, Yrange, Yts, totalpat);
+                [~, pred, f1s, ~] = runDLSI(Y, Yrange, Yts, totalpat,1,0.1);
             elseif(method == 2)    
-                [D, pred, f1s] = runCOPAR(Y, Yrange, Yts, totalpat);
+                [~, pred, f1s] = runCOPAR(Y, Yrange, Yts, totalpat,0.01,0.01);
             elseif(method == 3)    
-                [D, pred, f1s] = runFDDL(Y, Yrange, Yts, totalpat);
+                [~, pred, f1s] = runFDDL(Y, Yrange, Yts, totalpat);
             else
                 disp('Invalid Argument')
                 break
