@@ -25,9 +25,9 @@ for i = 1:length(imcells)
 end
  
 %}
-seq = 1; %Select sequence: 1.Flair, 2.T1, 3.T1C, 4.T2
+seq = 4; %Select sequence: 1.Flair, 2.T1, 3.T1C, 4.T2
 masks = {allimagesmasks{seq}{inds{seq}}};
-imcells = imcells_seq1; %Select sequence: 1.Flair, 2.T1, 3.T1C, 4.T2
+imcells = imcells_seq4; %Select sequence: 1.Flair, 2.T1, 3.T1C, 4.T2
  
 labels = labels(inds{seq});
 glabels = glabels(inds{seq});
@@ -57,7 +57,7 @@ finlabels = slabels;
 labelsall = [labels, glabels, clabels];
 for labs = 1:3
     finlabels = labelsall(:,labs);
-    totalpat = 300; %number of patches per patient
+    totalpat = 140; %number of patches per patient
     allfeats = {}; %contains all the image patches 
     psize = 16; %patch size: [psize x psize]
     for p = 1:length(finlabels)
