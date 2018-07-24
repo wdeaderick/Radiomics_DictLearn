@@ -4,4 +4,4 @@ This repo contains code for the experiments in the 2018 paper *A Visually-Interp
  
 ## Requires
 
-All exeriments are written in the MATLAB programming and require 
+All exeriments are written in the MATLAB programming and require [VLFeat](http://www.vlfeat.org/overview/hog.html) for representation extraction and 
