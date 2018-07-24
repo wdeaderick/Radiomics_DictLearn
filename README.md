@@ -8,4 +8,4 @@ All exeriments are written in the MATLAB programming and require [VLFeat](http:/
 
 ## Execution
 
-To perform the experiments, one must only run
+To perform the experiments, run either the "mainHOG" header file (for use with the Histogram of Gradients representation), the "mainSIFT" header file (for use with the Scale Invariant Feature Transform representation), or the "mainPIXEL" header file (for use with the trivial representation of the raw pixels). Each header file requires two arguments - 
