@@ -1,6 +1,9 @@
-function [mean_aucs] = mainSIFT(method)
+function [mean_aucs] = mainSIFT(method, seq)
 %The method argument should be passed 1 for DLSI, 2 for COPAR, 3 for FDDL
+%The seq argument should be passed 1 for the Flair modality, 2 for the T1 modality, 3 for the 
+%T1C modality, 4 for the T2 modality
 %Returns a 1x3 vectors "mean_aucs" containing the mean AUCs for IDH Status, Grade, and Codeletion, respectively.
+
 load wspace.mat
 mean_aucs = [];%Preallocate return vector
  
@@ -25,7 +28,7 @@ for i = 1:length(imcells)
 end
  
 %}
-seq = 4; %Select sequence: 1.Flair, 2.T1, 3.T1C, 4.T2
+
 masks = {allimagesmasks{seq}{inds{seq}}};
 imcells = imcells_seq4; %Select sequence: 1.Flair, 2.T1, 3.T1C, 4.T2
  
