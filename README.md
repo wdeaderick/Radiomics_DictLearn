@@ -4,7 +4,7 @@ This repo contains code for the experiments in the 2018 paper *A Visually-Interp
  
 ## Requirements
 
-All exeriments are written in the MATLAB programming and require [VLFeat](http://www.vlfeat.org/overview/hog.html) for representation extraction and [DICTOL](https://github.com/tiepvupsu/DICTOL) for dictionary learning.
+All experiments are written in the MATLAB programming language and require [VLFeat](http://www.vlfeat.org/overview/hog.html) for representation extraction and [DICTOL](https://github.com/tiepvupsu/DICTOL) for dictionary learning.
 
 ## Execution
 
